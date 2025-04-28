@@ -4,10 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 
 public class BettingPageGUI extends JFrame {
 
-    private double balance = 1000.00; // Starting balance
+    private double balance = 1000.00; // starting balance
     private JTextArea historyArea;
     private JTextField betAmountInput;
     private JButton betButton;
@@ -15,14 +16,51 @@ public class BettingPageGUI extends JFrame {
     private JTextArea statsArea;
     private double totalEarnings = 0;
     private JButton homeButton;
+    private NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+
+
+    private static class Horse {
+        char symbol;
+        String name;
+        double confidence;
+        double payoutMultiplier;
+
+        public Horse(char symbol, String name, double confidence) {
+            this.symbol = symbol;
+            this.name = name;
+            this.confidence = confidence;
+            // calculate payout multiplier based on confidence (higher confidence = lower payout)
+            this.payoutMultiplier = 2.5 - (confidence * 1.5); // range from 1.0x to 2.5x
+        }
+
+        public boolean raceOutcome() {
+            // base win chance is the confidence level
+            double winChance = Math.min(0.9, this.confidence * 0.9);
+            return Math.random() < winChance;
+        }
+    }
+
+    // Your 10 horses
+    private Horse[] horses = {
+            new Horse('a', "Ayo", 0.7),
+            new Horse('b', "Bilal", 0.6),
+            new Horse('c', "Charlie", 0.7),
+            new Horse('d', "Dave", 0.5),
+            new Horse('e', "Eric", 0.8),
+            new Horse('f', "Friday", 0.6),
+            new Horse('g', "Gregory", 0.4),
+            new Horse('h', "Harry", 0.4),
+            new Horse('i', "Ilyas", 0.6),
+            new Horse('j', "Jeremy", 0.8)
+    };
 
     public BettingPageGUI() {
-        setTitle("Betting System");
-        setSize(700, 500);
+        setTitle("Horse Betting System");
+        setSize(800, 600); // slightly larger to accommodate more horses
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Center the window
-
         initUI();
+        updateStats(); // show initial balance
     }
 
     private void initUI() {
@@ -30,27 +68,31 @@ public class BettingPageGUI extends JFrame {
         panel.setLayout(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // History display area
+        // history display area
         historyArea = new JTextArea();
         historyArea.setEditable(false);
         historyArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane historyScroll = new JScrollPane(historyArea);
 
-        // Stats display area
+        // stats display area
         statsArea = new JTextArea();
         statsArea.setEditable(false);
         statsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane statsScroll = new JScrollPane(statsArea);
 
-        // Combo box for selecting a horse
-        String[] horses = {"Horse 1", "Horse 2", "Horse 3"};
-        horseComboBox = new JComboBox<>(horses);
+        // combo box for selecting a horse
+        String[] horseNames = new String[horses.length];
+        for (int i = 0; i < horses.length; i++) {
+            horseNames[i] = String.format("%c - %s (%.1fx)",
+                    horses[i].symbol, horses[i].name, horses[i].payoutMultiplier);
+        }
+        horseComboBox = new JComboBox<>(horseNames);
 
-        // Input field for the bet amount
+        // input field for the bet amount
         betAmountInput = new JTextField();
         betAmountInput.setPreferredSize(new Dimension(100, 30));
 
-        // Button to place a bet
+        // button to place a bet
         betButton = new JButton("Place Bet");
         betButton.addActionListener(new ActionListener() {
             @Override
@@ -59,17 +101,17 @@ public class BettingPageGUI extends JFrame {
             }
         });
 
-        // Home button to go back to the main menu
+        // home button to go back to the main menu
         homeButton = new JButton("Home");
         homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new MainMenuGUI().setVisible(true);
-                dispose(); // Close current window
+                dispose(); // close current window
             }
         });
 
-        // Add components to panel
+        // add components to panel
         JPanel topPanel = new JPanel(new FlowLayout());
         topPanel.add(new JLabel("Pick a Horse:"));
         topPanel.add(horseComboBox);
@@ -79,11 +121,15 @@ public class BettingPageGUI extends JFrame {
 
         panel.add(topPanel, BorderLayout.NORTH);
         panel.add(historyScroll, BorderLayout.CENTER);
-        panel.add(statsScroll, BorderLayout.SOUTH);
 
-        // Add home button at the bottom
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(homeButton);
+        // create a bottom panel for stats and home button
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(statsScroll, BorderLayout.CENTER);
+
+        JPanel homeButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        homeButtonPanel.add(homeButton);
+        bottomPanel.add(homeButtonPanel, BorderLayout.SOUTH);
+
         panel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(panel);
@@ -106,36 +152,39 @@ public class BettingPageGUI extends JFrame {
         }
 
         if (betAmount > balance) {
-            JOptionPane.showMessageDialog(this, "You don’t have enough money for that bet!");
+            JOptionPane.showMessageDialog(this, "You don't have enough money for that bet!");
             return;
         }
 
-        // Random outcome for the race
-        String selectedHorse = (String) horseComboBox.getSelectedItem();
-        double raceResult = Math.random(); // Random result (win or lose)
+        // get selected horse
+        int selectedIndex = horseComboBox.getSelectedIndex();
+        Horse selectedHorse = horses[selectedIndex];
 
-        if (raceResult > 0.5) {
-            // Win case
-            double winnings = betAmount * 2; // Assuming 2x payout for a win
+        // simulate race outcome (true = win, false = loss)
+        boolean raceWon = selectedHorse.raceOutcome();
+        if (raceWon) {
+            double winnings = betAmount * selectedHorse.payoutMultiplier;
             balance += winnings;
-            totalEarnings += winnings;
-            historyArea.append("Bet on " + selectedHorse + " - Win! Winnings: " + winnings + "\n");
+            totalEarnings += (winnings - betAmount); // Only count profit
+            historyArea.append(String.format("Bet on %s (%c) - Win! Winnings: %s\n",
+                    selectedHorse.name, selectedHorse.symbol, currencyFormat.format(winnings)));
         } else {
-            // Loss case
             balance -= betAmount;
-            historyArea.append("Bet on " + selectedHorse + " - Lost. Bet amount: " + betAmount + "\n");
+            totalEarnings -= betAmount;
+            historyArea.append(String.format("Bet on %s (%c) - Lost. Bet amount: %s\n",
+                    selectedHorse.name, selectedHorse.symbol, currencyFormat.format(betAmount)));
         }
 
-        // Update stats
+        // update stats
         updateStats();
 
-        // Reset the bet amount input field
+        // reset the bet amount input field
         betAmountInput.setText("");
     }
 
     private void updateStats() {
-        statsArea.setText("Balance: " + balance + "\n");
-        statsArea.append("Total Earnings: " + totalEarnings + "\n");
+        statsArea.setText(String.format("Current Balance: %s\n", currencyFormat.format(balance)));
+        statsArea.append(String.format("Total Earnings: %s\n", currencyFormat.format(totalEarnings)));
     }
 
     public static void main(String[] args) {
