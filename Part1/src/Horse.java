@@ -54,7 +54,7 @@ public class Horse {
     }
 
     public void setConfidence(double newConfidence) {
-        this.horseConfidence = Math.max(0.0, Math.min(1.0, newConfidence)); // keep it between 0.0 and 1.0
+        this.horseConfidence = Math.max(0.0, Math.min(1.0, newConfidence)); // keeps confidence between 0.0 and 1.0
     }
 
     public void setSymbol(char newSymbol) {

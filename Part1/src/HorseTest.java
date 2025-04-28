@@ -2,6 +2,10 @@ public class HorseTest {
     public static void main(String[] args) {
         Horse testHorse = new Horse('t', "TestHorse", 0.8);
 
+        // Test 1: moveForward()
+        System.out.println("Distance = " + testHorse.getDistanceTravelled());
+        testHorse.moveForward();
+        System.out.println("Distance = " + testHorse.getDistanceTravelled()); // expected output is 1
 
         // test 2: fall()
         System.out.println("Fallen =  " + testHorse.hasFallen() + ", Confidence = " + testHorse.getConfidence());
