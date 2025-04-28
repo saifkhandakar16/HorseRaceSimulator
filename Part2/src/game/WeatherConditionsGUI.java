@@ -10,8 +10,8 @@ public class WeatherConditionsGUI extends JFrame {
     private JComboBox<String> weatherComboBox;
     private JComboBox<String> trackComboBox;
     private JButton nextButton;
-    private JButton backButton; // Back button
-    private JButton homeButton; // Home button
+    private JButton backButton;
+    private JButton homeButton;
 
     public WeatherConditionsGUI() {
         setTitle("Weather and Track Conditions");
@@ -23,77 +23,79 @@ public class WeatherConditionsGUI extends JFrame {
     }
 
     private void setupUI() {
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10)); // Layout for 6 rows (added space for Home button)
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // main panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Labels for options
+        // center panel for weather and track selection
+        JPanel centerPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+
         JLabel weatherLabel = new JLabel("Pick Weather:");
         JLabel trackLabel = new JLabel("Pick Track Condition:");
 
-        // Weather options
         String[] weatherOptions = {"Sunny", "Rainy", "Snowy", "Windy", "Foggy"};
         weatherComboBox = new JComboBox<>(weatherOptions);
 
-        // Track condition options
         String[] trackOptions = {"Dry", "Muddy", "Icy", "Soft", "Hard"};
         trackComboBox = new JComboBox<>(trackOptions);
 
-        // Next button to move forward
-        nextButton = new JButton("Next");
-        nextButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String selectedWeather = (String) weatherComboBox.getSelectedItem();
-                String selectedTrack = (String) trackComboBox.getSelectedItem();
-                JOptionPane.showMessageDialog(null,
-                        "Weather: " + selectedWeather + "\nTrack: " + selectedTrack);
+        centerPanel.add(weatherLabel);
+        centerPanel.add(weatherComboBox);
+        centerPanel.add(trackLabel);
+        centerPanel.add(trackComboBox);
 
-                // After clicking next, go to Horse Customization screen
-                new HorseEditorGUI().setVisible(true);
-                dispose(); // Close current window
-            }
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+        // bottom panel for buttons
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+
+        // home button on the left
+        homeButton = new JButton("🏠 Home");
+        homeButton.addActionListener(e -> {
+            new MainMenuGUI().setVisible(true);
+            dispose();
         });
 
-        // Back button to go to previous screen
-        backButton = new JButton("Back");
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new TrackSetupGUI().setVisible(true); // Go back to Track Setup screen
-                dispose(); // Close current window
-            }
+        // panel for next/back buttons on the right
+        JPanel nextBackPanel = new JPanel();
+        nextBackPanel.setLayout(new BoxLayout(nextBackPanel, BoxLayout.Y_AXIS));
+        nextBackPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+
+        nextButton = new JButton("➡ Next");
+        nextButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        nextButton.addActionListener(e -> {
+            String selectedWeather = (String) weatherComboBox.getSelectedItem();
+            String selectedTrack = (String) trackComboBox.getSelectedItem();
+
+            GameSettings.weather = selectedWeather;
+            GameSettings.trackCondition = selectedTrack;
+
+            new HorseEditorGUI().setVisible(true);
+            dispose();
         });
 
-        // Home button to go back to the main menu
-        homeButton = new JButton("Home");
-        homeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new MainMenuGUI().setVisible(true); // Go back to the main menu
-                dispose(); // Close current window
-            }
+        backButton = new JButton("⬅ Back");
+        backButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        backButton.addActionListener(e -> {
+            new TrackSetupGUI().setVisible(true);
+            dispose();
         });
 
-        // Add components to the panel
-        panel.add(weatherLabel);
-        panel.add(weatherComboBox);
-        panel.add(trackLabel);
-        panel.add(trackComboBox);
-        panel.add(new JLabel()); // Empty space
-        panel.add(backButton);  // Add Back button
-        panel.add(homeButton);  // Add Home button
-        panel.add(new JLabel()); // Empty space
-        panel.add(nextButton);   // Add Next button
+        nextBackPanel.add(nextButton);
+        nextBackPanel.add(Box.createVerticalStrut(5)); // small space between buttons
+        nextBackPanel.add(backButton);
 
-        add(panel);
+        bottomPanel.add(homeButton, BorderLayout.WEST);
+        bottomPanel.add(nextBackPanel, BorderLayout.EAST);
+
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new WeatherConditionsGUI().setVisible(true); // Start Weather/Track conditions window
-            }
+        SwingUtilities.invokeLater(() -> {
+            new WeatherConditionsGUI().setVisible(true);
         });
     }
 }
