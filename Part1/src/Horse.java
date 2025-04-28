@@ -1,14 +1,14 @@
 public class Horse {
-    private char symbol;
-    private String name;
-    private double confidence;
+    private char horseSymbol;
+    private String horseName;
+    private double horseConfidence;
     private int distanceTravelled;
     private boolean hasFallen;
 
-    public Horse(char symbol, String name, double confidence) {
-        this.symbol = symbol;
-        this.name = name;
-        this.confidence = confidence;
+    public Horse(char horseSymbol, String horseName, double horseConfidence) {
+        this.horseSymbol = horseSymbol;
+        this.horseName = horseName;
+        this.horseConfidence = horseConfidence;
         this.distanceTravelled = 0;
         this.hasFallen = false;
     }
@@ -21,7 +21,7 @@ public class Horse {
 
     public void fall() {
         this.hasFallen = true;
-        this.confidence = Math.max(0.0, this.confidence - 0.1); // decreases confidence by 0.1 after a fall
+        this.horseConfidence = Math.max(0.0, this.horseConfidence - 0.1); // decreases confidence by 0.1 after a fall
     }
 
     public void goBackToStart() {
@@ -30,7 +30,7 @@ public class Horse {
     }
 
     public void increaseConfidence(double amount) {
-        this.confidence = Math.min(1.0, this.confidence + amount); // caps confidence at 1
+        this.horseConfidence = Math.min(1.0, this.horseConfidence + amount); // caps confidence at 1
     }
 
     public boolean hasFallen() {
@@ -38,7 +38,7 @@ public class Horse {
     }
 
     public double getConfidence() {
-        return this.confidence;
+        return this.horseConfidence;
     }
 
     public int getDistanceTravelled() {
@@ -46,10 +46,18 @@ public class Horse {
     }
 
     public char getSymbol() {
-        return this.symbol;
+        return this.horseSymbol;
     }
 
     public String getName() {
-        return this.name;
+        return this.horseName;
+    }
+
+    public void setConfidence(double newConfidence) {
+        this.horseConfidence = Math.max(0.0, Math.min(1.0, newConfidence)); // keeps confidence between 0.0 and 1.0
+    }
+
+    public void setSymbol(char newSymbol) {
+        this.horseSymbol = newSymbol;
     }
 }
