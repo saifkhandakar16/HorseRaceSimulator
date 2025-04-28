@@ -26,11 +26,15 @@ public class TrackSetupGUI extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(5, 2, 10, 10));
 
-        JLabel laneLabel = new JLabel("Choose Number of Lanes:");
+        JLabel laneLabel = new JLabel("Choose Number of Lanes (1-15):");
         JLabel lengthLabel = new JLabel("Track Length (m):");
         JLabel shapeLabel = new JLabel("Choose Track Shape:");
 
-        Integer[] laneOptions = {2, 4, 6, 8, 10};
+        // create array for 1-15 lane options
+        Integer[] laneOptions = new Integer[15];
+        for (int i = 0; i < 15; i++) {
+            laneOptions[i] = i + 1;
+        }
         laneComboBox = new JComboBox<>(laneOptions);
 
         trackLengthTextField = new JTextField("1000");
@@ -38,7 +42,7 @@ public class TrackSetupGUI extends JFrame {
         String[] shapes = {"Oval", "Figure-eight", "ZigZag"};
         shapeComboBox = new JComboBox<>(shapes);
 
-        // Next button
+        // next button
         nextButton = new JButton("➡ Next");
         nextButton.addActionListener(e -> {
             int laneCount = (int) laneComboBox.getSelectedItem();
@@ -48,10 +52,22 @@ public class TrackSetupGUI extends JFrame {
             try {
                 int length = Integer.parseInt(trackLengthStr);
 
-                // Save into GameSettings
+                if (length <= 0) {
+                    JOptionPane.showMessageDialog(null, "Track length must be positive.");
+                    return;
+                }
+
+                // save into GameSettings
                 GameSettings.laneCount = laneCount;
                 GameSettings.trackLength = length;
                 GameSettings.trackShape = trackShape;
+
+                // if more than 10 lanes, set empty lanes
+                if (laneCount > 10) {
+                    GameSettings.emptyLanes = laneCount - 10;
+                } else {
+                    GameSettings.emptyLanes = 0;
+                }
 
                 new WeatherConditionsGUI().setVisible(true);
                 dispose();
@@ -61,7 +77,7 @@ public class TrackSetupGUI extends JFrame {
             }
         });
 
-        // Back button
+        // back button
         backButton = new JButton("⬅ Back");
         backButton.addActionListener(e -> {
             new MainMenuGUI().setVisible(true);
